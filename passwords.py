@@ -62,4 +62,5 @@ async def main():
         for i in range(0,N):
             nursery.start_soon(reset_user_password, [recv_channel.clone()])
 
-trio.run(main)
+def reset_passwords():
+    trio.run(main)

@@ -3,16 +3,8 @@ import trio
 import httpx
 from time import time
 from retry import retry
+from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-group_id = config['APP_SETTINGS']['GROUP_ID']
-api_key = config['APP_SETTINGS']['API_TOKEN']
-org = config['APP_SETTINGS']['ORG']
-N = config['APP_SETTINGS']['MAX_CONCURRENT_SESSIONS']
-
-headers = {'Accept': 'application/json', 'Content-Type':'application/json', 'Authorization': f'SSWS {api_key}'}
 
 deleted_num = 0
 
@@ -98,4 +90,7 @@ async def main():
         for i in range(5):
             nursery.start_soon(delete_worker,[delete_receive_channel.clone()])
         # print(nursery.child_tasks)
-trio.run(main)
+
+
+def delete_users():
+    trio.run(main)

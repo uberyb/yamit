@@ -192,10 +192,10 @@ async def main():
         for i in range(0,N):
             nursery.start_soon(worker, [f'/api/v1/users?activate={activate}', receive_channel.clone()])
 
-
-trio.run(main)
-runtime = int(time() - start_time)
-with open('log.csv', 'a',newline='') as logger:
-    w = csv.writer(logger)
-    w.writerow(['Complete', f"Time in seconds: {runtime}", f"Time in minutes: {int(runtime/60)}", f"Time in hours: {int(runtime/(60**2))}"])
-    logger.close()
+def import_users():
+    trio.run(main)
+    runtime = int(time() - start_time)
+    with open('log.csv', 'a',newline='') as logger:
+        w = csv.writer(logger)
+        w.writerow(['Complete', f"Time in seconds: {runtime}", f"Time in minutes: {int(runtime/60)}", f"Time in hours: {int(runtime/(60**2))}"])
+        logger.close()
