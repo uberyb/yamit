@@ -12,10 +12,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
 
+
     if args.delete_users:
         delete_users()
-    if not no_import:
+    if args.no_import:
         import_users()
-    if reset_passwords:
+    if args.reset_passwords:
         reset_passwords()
         
