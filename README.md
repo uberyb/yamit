@@ -43,7 +43,7 @@ RESET_TIME_IN_SECONDS = 0
 * Notify - tells you how often the tool will print to console. A value of 100 means it will print every for every 100th user.
 * Speed - this is a percentage between 0 and 100 to specify how much of your api rate limit you want to use. Set it to 100 to go as fast as possible
 * Activate - takes values true or false, this determines if the user will be created in an active state or not.
-* Password type - Needs to be set to PLAIN or a hash algorithm. Supported algorithms are BCRYPT, SHA-512, SHA-256, SHA-1, or MD5.
+* Password type - Needs to be set to EMPTY, PLAIN, HOOK, or a hash algorithm. Supported algorithms are BCRYPT, SHA-512, SHA-256, SHA-1, or MD5.
 * Salt order - will need to be POSTFIX or PREFIX. Mostly used in SHA algorithms.
 * Work factor - needs to be specified for Bcrypt
 * Reset time in seconds - used if you want to override information about your rate limit. You can specify manually how long you want to wait after receiving a 429 from Okta
@@ -70,16 +70,10 @@ There are a few options though
 -r, --reset-passwords : tells yamit that you want to reset the passwords of everyone in the group id
 ```
 
-For example, if you want to delete all users in a group and then run your import you can use
-
-```
-python yamit.py -d
-```
-
 if you just want to delete users:
 
 ```
-python yamit.py -p -x
+python yamit.py -d
 ```
 
 If you want to import users and then do password resets on all of them afterwards:
