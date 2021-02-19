@@ -38,7 +38,6 @@ with httpx.Client() as client:
             next_link = r.headers['link'].split(",")[1].split(";")[0].replace(" ", "").replace("<", "").replace(">","")
             r = client.get(next_link,headers=headers)
         except: break
-    print(len(user_logins))
     client.close()
 
 
