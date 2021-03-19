@@ -9,34 +9,33 @@ from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode
 deleted_num = 0
 
 
-@retry(tries=3,delay=2)
+# @retry(tries=3,delay=2)
 async def emit_users(args):
     deactivate_send_channel = args[0]
     rel = f"/api/v1/groups/{group_id}/users?limit=200"
 
-
     async with deactivate_send_channel:
         async with httpx.AsyncClient(timeout=120) as client:
+            job_finished = False
             r = await client.get(org+rel,headers=headers)
-            while len(r.json()) > 0:
-                try:
-                    while r.status_code == 429:
-                        await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time())+5)
-                        r = await client.get(next_link,headers=headers)
-
-                    for user in r.json():
-                        await deactivate_send_channel.send(user['id'])
-
-                    next_link = r.headers['link'].split(",")[1].split(";")[0].replace(" ", "").replace("<", "").replace(">","")
+            while not job_finished:
+            
+                while r.status_code == 429:
+                    print("429!")
+                    await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time())+5)
                     r = await client.get(next_link,headers=headers)
-            # await client.aclose()
+            
+                if r.status_code == 200:
+                    for user in r.json():
+                        # print(f"Emitted {user['profile']['login']}")
+                        await deactivate_send_channel.send(user['id'])
+                    if hasattr(r, 'links'):
+                        if 'next' in r.links.keys():
+                            next_link = r.links['next']['url']
+                            r = await client.get(next_link,headers=headers)
+                        else: job_finished = True
 
-                except:
-                    await client.aclose()
-                    await deactivate_send_channel.aclose()
-                    break
-            await client.aclose()
-            await deactivate_send_channel.aclose()
+
     print("Closing emit worker")
 
 @retry(tries=3,delay=2)
@@ -51,10 +50,8 @@ async def deactivate_worker(args):
                     while r.status_code == 429:
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time())+5)
                         r = await client.post(org + f'/api/v1/users/{user}/lifecycle/deactivate', headers=headers)
-                    await delete_send_channel.send(user)
-
-                await client.aclose()
-        await delete_send_channel.aclose()
+                await delete_send_channel.send(user)
+            # await delete_send_channel.aclose()
     print("Closing deactivate worker")
 
 
@@ -64,7 +61,6 @@ async def delete_worker(args):
     del_chan = args[0]
     global deleted_num
     # async with del_chan:
-
     async with del_chan:
         async for user in del_chan:
             async with httpx.AsyncClient(timeout=120) as client:
@@ -77,7 +73,6 @@ async def delete_worker(args):
                 if deleted_num % 100 == 0:
                     print(f"Deleted {deleted_num} users.")
 
-            await client.aclose()
     print("Closing delete worker")
 
 async def main():

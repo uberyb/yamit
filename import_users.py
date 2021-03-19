@@ -14,12 +14,8 @@ schema_by_type = dict()
 password_options =  list()
 num_users = 0
 
-    # Do data cleanup here
 
 
-
-
-# filepath='users.csv'
 
 async def csv_emitter(send_channel):
     print("All set. Beginning import.")
@@ -27,17 +23,13 @@ async def csv_emitter(send_channel):
         with open(csv_file, 'r', encoding='utf8') as f:
             c = csv.reader(f, delimiter=',')
             attributes = next(c)
-            # attributes = c.fieldnames
-            # print(attributes)
-            # print(headers)
             for row in c:
-                # print(row)
                 await send_channel.send(row)
 
 
 @retry(tries=3,delay=2)
 async def worker(args):
-    global num_users
+    global num_users, global_lock
     rel = args[0]
     rows = args[1]
     async with rows:
@@ -52,22 +44,24 @@ async def worker(args):
                             r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
 
                         else:
+                            
                             await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
                             r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+
 
                     elif r.status_code == 200:
                         if speed != 100:
                             limit = int(r.headers['x-rate-limit-limit'])
                             remaining = int(r.headers['x-rate-limit-remaining'])
-                            if remaining <= (limit * speed/100):
-                                await trio.sleep(int(r.headers['x-rate-limit-reset']))
+                            if (remaining <= (limit+N - (limit * speed/100))) or global_lock:
+                                await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
                         num_users += 1
                         if num_users % notify == 0:
-                            print(f"Imported {row[attributes.index('login')]} (total {num_users})")
+                            print(f"Last imported {row[attributes.index('login')]}\t total {num_users}")
                     else:
                         with open('log.csv', 'a',newline='') as logger:
                             w = csv.writer(logger)
-                            w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'],r.json(), r.status_code])
+                            w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
                             logger.close()
                 except:
                     with open('log.csv', 'a',newline='') as logger:
