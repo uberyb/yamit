@@ -29,7 +29,7 @@ async def csv_emitter(send_channel):
 
 @retry(tries=3,delay=2)
 async def worker(args):
-    global num_users, global_lock
+    global num_users
     rel = args[0]
     rows = args[1]
     async with rows:
@@ -65,10 +65,15 @@ async def worker(args):
                     
                 if r.status_code != 200 and r.status_code != 429:
                     with open('log.csv', 'a',newline='') as logger:
-                            w = csv.writer(logger)
-                            w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
-                            logger.close()
-            await client.aclose()
+                        w = csv.writer(logger)
+                        w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
+                        logger.close()
+                # except:
+                #     with open('log.csv', 'a',newline='') as logger:
+                #             w = csv.writer(logger)
+                #             w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
+                #             logger.close()
+            # await client.aclose()
 
     # print("Closing worker.")
 
