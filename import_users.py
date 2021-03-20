@@ -36,36 +36,6 @@ async def worker(args):
         async for row in rows:
             user_profile_complete = build_profile(row)
             async with httpx.AsyncClient(timeout=120) as client:
-<<<<<<< HEAD
-                try:
-                    r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-                    if r.status_code == 429:
-                        if reset_time_in_seconds != 0:
-                            await trio.sleep(reset_time_in_seconds)
-                            r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-
-                        else:
-                            
-                            await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
-                            r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-
-
-                    elif r.status_code == 200:
-                        if speed != 100:
-                            limit = int(r.headers['x-rate-limit-limit'])
-                            remaining = int(r.headers['x-rate-limit-remaining'])
-                            if (remaining <= (limit+N - (limit * speed/100))) or global_lock:
-                                await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
-                        num_users += 1
-                        if num_users % notify == 0:
-                            print(f"Last imported {row[attributes.index('login')]}\t total {num_users}")
-                    else:
-                        with open('log.csv', 'a',newline='') as logger:
-                            w = csv.writer(logger)
-                            w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
-                            logger.close()
-                except:
-=======
                 # try:
                 r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
                 while r.status_code == 429:
@@ -94,7 +64,6 @@ async def worker(args):
                     
                     
                 if r.status_code != 200 and r.status_code != 429:
->>>>>>> develop
                     with open('log.csv', 'a',newline='') as logger:
                             w = csv.writer(logger)
                             w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
