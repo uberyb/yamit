@@ -26,9 +26,9 @@ async def emit_users(args):
                     for user in r.json():
                         await deactivate_send_channel.send(user['id'])
                     if hasattr(r, 'links'):
-                        if 'next' in r.links.keys():
-                            next_link = r.links['next']['url']
-                            r = await client.get(next_link,headers=headers)
+                        next = r.links.get('next')
+                        if next:
+                            r = await client.get(next['url'], headers=headers)
                         else: job_finished = True
 
 async def deactivate_worker(args):
