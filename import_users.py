@@ -29,46 +29,51 @@ async def csv_emitter(send_channel):
 
 @retry(tries=3,delay=2)
 async def worker(args):
-    global num_users, global_lock
+    global num_users
     rel = args[0]
     rows = args[1]
     async with rows:
         async for row in rows:
             user_profile_complete = build_profile(row)
             async with httpx.AsyncClient(timeout=120) as client:
-                try:
-                    r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-                    if r.status_code == 429:
-                        if reset_time_in_seconds != 0:
-                            await trio.sleep(reset_time_in_seconds)
-                            r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                # try:
+                r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                if r.status_code == 429:
+                    if reset_time_in_seconds != 0:
+                        await trio.sleep(reset_time_in_seconds)
+                        r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
 
-                        else:
-                            
-                            await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
-                            r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-
-
-                    elif r.status_code == 200:
-                        if speed != 100:
-                            limit = int(r.headers['x-rate-limit-limit'])
-                            remaining = int(r.headers['x-rate-limit-remaining'])
-                            if (remaining <= (limit+N - (limit * speed/100))) or global_lock:
-                                await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
-                        num_users += 1
-                        if num_users % notify == 0:
-                            print(f"Last imported {row[attributes.index('login')]}\t total {num_users}")
                     else:
-                        with open('log.csv', 'a',newline='') as logger:
-                            w = csv.writer(logger)
-                            w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
-                            logger.close()
-                except:
+                        
+                        await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
+                        r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+
+
+                elif r.status_code == 200:
+                    num_users += 1
+                    # print(f"Rem: {r.headers['x-rate-limit-remaining']} \t No: {num_users}")
+                    if num_users % notify == 0:
+                        # print("notify")
+                        print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']}")
+
+                    if speed != 100:
+                        limit = int(r.headers['x-rate-limit-limit'])
+                        remaining = int(r.headers['x-rate-limit-remaining'])
+                        if (remaining <= (limit+N - (limit * speed/100))):
+                            await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
+                    
+                    
+                else:
                     with open('log.csv', 'a',newline='') as logger:
-                            w = csv.writer(logger)
-                            w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
-                            logger.close()
-            await client.aclose()
+                        w = csv.writer(logger)
+                        w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
+                        logger.close()
+                # except:
+                #     with open('log.csv', 'a',newline='') as logger:
+                #             w = csv.writer(logger)
+                #             w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
+                #             logger.close()
+            # await client.aclose()
 
     print("Closing worker.")
 
