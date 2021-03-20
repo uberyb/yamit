@@ -73,4 +73,5 @@ async def main():
 
 
 def delete_users():
+    print(f"Deleting users from {group_id}")
     trio.run(main)

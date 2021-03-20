@@ -38,32 +38,32 @@ async def worker(args):
             async with httpx.AsyncClient(timeout=120) as client:
                 # try:
                 r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-                if r.status_code == 429:
+                while r.status_code == 429:
                     if reset_time_in_seconds != 0:
                         await trio.sleep(reset_time_in_seconds)
-                        r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                        # r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
 
                     else:
-                        
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
-                        r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+
+                    r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
 
 
-                elif r.status_code == 200:
-                    num_users += 1
-                    # print(f"Rem: {r.headers['x-rate-limit-remaining']} \t No: {num_users}")
-                    if num_users % notify == 0:
-                        # print("notify")
-                        print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']}")
+    
+                num_users += 1
+                # print(f"Rem: {r.headers['x-rate-limit-remaining']} \t No: {num_users}")
+                if num_users % notify == 0:
+                    # print("notify")
+                    print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']} \t status {r.status_code}")
 
-                    if speed != 100:
-                        limit = int(r.headers['x-rate-limit-limit'])
-                        remaining = int(r.headers['x-rate-limit-remaining'])
-                        if (remaining <= (limit+N - (limit * speed/100))):
-                            await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
+                if speed != 100:
+                    limit = int(r.headers['x-rate-limit-limit'])
+                    remaining = int(r.headers['x-rate-limit-remaining'])
+                    if (remaining <= (limit+N - (limit * speed/100))):
+                        await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
                     
                     
-                else:
+                if r.status_code != 200 and r.status_code != 429:
                     with open('log.csv', 'a',newline='') as logger:
                         w = csv.writer(logger)
                         w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
@@ -75,7 +75,7 @@ async def worker(args):
                 #             logger.close()
             # await client.aclose()
 
-    print("Closing worker.")
+    # print("Closing worker.")
 
 
 def build_credentials(row):
@@ -185,7 +185,7 @@ async def main():
     print("Comparing attributes to Okta user schema...")
     check_atr()
     async with trio.open_nursery() as nursery:
-        send_channel, receive_channel = trio.open_memory_channel(N)
+        send_channel, receive_channel = trio.open_memory_channel(0)
         # recv_chan = await csv_emitter('users.csv')
         nursery.start_soon(csv_emitter,send_channel)
         for i in range(0,N):
@@ -197,4 +197,5 @@ def import_users():
     with open('log.csv', 'a',newline='') as logger:
         w = csv.writer(logger)
         w.writerow(['Complete', f"Time in seconds: {runtime}", f"Time in minutes: {int(runtime/60)}", f"Time in hours: {int(runtime/(60**2))}"])
+        print(f"Complete! \t time (sec) {runtime} \t time (min) {int(runtime/60)} \t time (hour) {int(runtime/(60**2))}")
         logger.close()
