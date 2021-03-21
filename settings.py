@@ -1,13 +1,19 @@
 import configparser
 
+from halo import Halo
+
+
+confspinner = Halo(text=f'Starting yamit.', spinner='dots')
+confspinner.start()
 org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds = ("" for i in range(10))
 attributes = list()
 schema_by_type = dict()
 password_options =  list()
 num_users = 0
 
-print("Loading config...")
+confspinner.text = "Loading config..."
 config = configparser.ConfigParser()
+
 config.read('config.ini')
 
 if len(config.sections()) == 0:
@@ -26,3 +32,5 @@ else:
     reset_time_in_seconds = int(config['ADVANCED']['RESET_TIME_IN_SECONDS'])
     headers = {'Accept': 'application/json', 'Content-Type':'application/json', 'Authorization': f'SSWS {api_key}'}
     workFactor = config['PASSWORD_SETTINGS']['WORK_FACTOR']
+
+confspinner.succeed("Config loaded.")
