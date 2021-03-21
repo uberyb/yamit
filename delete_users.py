@@ -6,6 +6,11 @@ from retry import retry
 from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers
 import math
 
+from halo import Halo
+
+
+start_time = int(time())
+spinner = Halo(text=f'Deleting users...', spinner='dots')
 deleted_num = 0
 
 async def emit_users(args):
@@ -34,7 +39,7 @@ async def emit_users(args):
 async def deactivate_worker(args):
     deac_chan = args[0]
     delete_send_channel = args[1]
-    global deleted_num
+    global deleted_num, spinner
     async with delete_send_channel:
         
         async with deac_chan:
@@ -50,28 +55,29 @@ async def deactivate_worker(args):
 
                     r = await client.delete(org + f'/api/v1/users/{user}', headers=headers)
                     while r.status_code == 429:
-                        
+                        spinner.info(f"Sleeping for {int(r.headers['x-rate-limit-reset']) - int(time())+5} seconds...")
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time())+5)
+                        spinner.start()
                         r = await client.delete(org + f'/api/v1/users/{user}', headers=headers)
                     deleted_num+=1
                     if deleted_num % notify == 0:
-                        print(f"Deleted {deleted_num} users.")
+                        spinner.text = f"Deleted {deleted_num} users \t runtime {int(time()) - start_time} seconds"
 
 
 
                 
 async def main():
+    global spinner
+    spinner.start()
     async with trio.open_nursery() as nursery:
         deactivate_send_channel, deactivate_receive_channel = trio.open_memory_channel(0)
         delete_send_channel, delete_receive_channel = trio.open_memory_channel(0)
         nursery.start_soon(emit_users, [deactivate_send_channel])
-        for i in range(5):
+        for i in range(N):
             nursery.start_soon(deactivate_worker,[deactivate_receive_channel.clone(),delete_send_channel.clone()])
-        # for i in range(5):
-        #     nursery.start_soon(delete_worker,[delete_receive_channel.clone()])
-        # print(nursery.child_tasks)
-
 
 def delete_users():
-    print(f"Deleting users from {group_id}")
+    global spinner
+    spinner.text = f"Deleting users from {group_id}"
     trio.run(main)
+    spinner.succeed("Completed.")

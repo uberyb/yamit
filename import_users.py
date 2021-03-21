@@ -6,6 +6,7 @@ import json
 from time import time
 from retry import retry
 
+from halo import Halo
 
 start_time = time()
 
@@ -14,11 +15,12 @@ schema_by_type = dict()
 password_options =  list()
 num_users = 0
 
-
+spinner = Halo(text=f'Importing...', spinner='dots')
 
 
 async def csv_emitter(send_channel):
-    print("All set. Beginning import.")
+    global spinner
+    spinner.text = "All set. Beginning import."
     async with send_channel:
         with open(csv_file, 'r', encoding='utf8') as f:
             c = csv.reader(f, delimiter=',')
@@ -29,9 +31,10 @@ async def csv_emitter(send_channel):
 
 @retry(tries=3,delay=2)
 async def worker(args):
-    global num_users
+    global num_users, spinner
     rel = args[0]
     rows = args[1]
+    global start_time
     async with rows:
         async for row in rows:
             user_profile_complete = build_profile(row)
@@ -54,13 +57,17 @@ async def worker(args):
                 # print(f"Rem: {r.headers['x-rate-limit-remaining']} \t No: {num_users}")
                 if num_users % notify == 0:
                     # print("notify")
-                    print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']} \t status {r.status_code}")
+                    # print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']} \t status {r.status_code}")
+                    spinner.text = f"Last imported {row[attributes.index('login')]} \t total {num_users} \t runtime {int(int(time() - start_time)/60)} minutes \t status {r.status_code}"
+                
 
                 if speed != 100:
                     limit = int(r.headers['x-rate-limit-limit'])
                     remaining = int(r.headers['x-rate-limit-remaining'])
-                    if (remaining <= (limit+N - (limit * speed/100))):
+                    if (remaining <= (limit+N - (limit * speed/100))) and (int(r.headers['x-rate-limit-reset']) - int(time())) > 0:
+                        spinner.info(f"Waiting for {int(r.headers['x-rate-limit-reset']) - int(time())} seconds to avoid being rate limited.")
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
+                        spinner.start()
                     
                     
                 if r.status_code != 200 and r.status_code != 429:
@@ -76,6 +83,7 @@ async def worker(args):
             # await client.aclose()
 
     # print("Closing worker.")
+    
 
 
 def build_credentials(row):
@@ -169,10 +177,13 @@ def check_atr():
             quit()
 
 async def main():
-    global attributes, password_options
+    global attributes, password_options, spinner
+    mainspinner = Halo(text='yamit Importing ', spinner='dots')
+    mainspinner.start()
     with open(csv_file, 'r') as f:
         c = csv.reader(f, delimiter=',')
-        print("Fetching attributes...")
+        mainspinner.succeed("Fetching attributes...")
+        mainspinner.start()
         for row in c:
             attributes = row
             password_options = attributes
@@ -182,20 +193,27 @@ async def main():
             break
         f.seek(0)
         f.close()
-    print("Comparing attributes to Okta user schema...")
+    
     check_atr()
+    mainspinner.succeed("Compared attributes to Okta user schema...")
     async with trio.open_nursery() as nursery:
         send_channel, receive_channel = trio.open_memory_channel(0)
         # recv_chan = await csv_emitter('users.csv')
         nursery.start_soon(csv_emitter,send_channel)
+        
+        spinner.start()
         for i in range(0,N):
             nursery.start_soon(worker, [f'/api/v1/users?activate={activate}', receive_channel.clone()])
 
+
+
 def import_users():
+    global spinner
     trio.run(main)
+    
     runtime = int(time() - start_time)
     with open('log.csv', 'a',newline='') as logger:
         w = csv.writer(logger)
         w.writerow(['Complete', f"Time in seconds: {runtime}", f"Time in minutes: {int(runtime/60)}", f"Time in hours: {int(runtime/(60**2))}"])
-        print(f"Complete! \t time (sec) {runtime} \t time (min) {int(runtime/60)} \t time (hour) {int(runtime/(60**2))}")
+        spinner.succeed(f"Complete! \t time (sec) {runtime} \t time (min) {int(runtime/60)} \t time (hour) {int(runtime/(60**2))}")
         logger.close()
