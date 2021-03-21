@@ -21,7 +21,7 @@ ORG = https://yourorg.okta.com
 API_TOKEN = 
 CSV_FILE = users.csv
 GROUP_ID = 
-NOTIFY = 100
+NOTIFY = 5
 SPEED = 80
 ACTIVATE = true
 
@@ -109,6 +109,7 @@ After the import you will receive a `log.csv` in the yamit directory which will 
 ## Issues
 
 Please post issues as you find them. I am usually pretty active and quick with fixes. So far, the tool has not been tested with SHA or MD5, only BCRYPT.
+* There are issues with long-running imports in WSL2. Avoid using WSL2 with yamit.
 
 
 
