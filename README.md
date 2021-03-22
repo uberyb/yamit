@@ -113,5 +113,5 @@ Please post issues as you find them. I am usually pretty active and quick with f
 
 ## Screenshots
 
-![](./images/runningimport.PNG)
+![](./images/cap2.gif)
 
