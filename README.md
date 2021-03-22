@@ -66,7 +66,7 @@ There are a few options though
 
 ```
 -d, --delete-users : will delete users in the specified group id
--x, --no-import : tells yamit to not actually run an import from csv
+-x, --no-import : tells yamit to not actually run an import from csv (no longer needed)
 -r, --reset-passwords : tells yamit that you want to reset the passwords of everyone in the group id
 -i, --information : Checks config file and calculates estimated import time
 ```
@@ -105,7 +105,7 @@ Then of course, each row will be each attribute value. Strings should be placed 
 
 ## Post-import
 
-After the import you will receive a `log.csv` in the yamit directory which will inform you of runtime and any encountered errors. Just verify this against the numbers you see imported. If you need to undo everything, you can always run `python yamit.py -d -x`. 
+After the import you will receive a `log.csv` in the yamit directory which will inform you of runtime and any encountered errors. Just verify this against the numbers you see imported. If you need to undo everything, you can always run `python yamit.py -d`. 
 
 ## Issues
 
