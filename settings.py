@@ -32,5 +32,6 @@ else:
     reset_time_in_seconds = int(config['ADVANCED']['RESET_TIME_IN_SECONDS'])
     headers = {'Accept': 'application/json', 'Content-Type':'application/json', 'Authorization': f'SSWS {api_key}'}
     workFactor = config['PASSWORD_SETTINGS']['WORK_FACTOR']
+    saltOrder = config['PASSWORD_SETTINGS']['SALT_ORDER']
 
 confspinner.succeed("Config loaded.")
