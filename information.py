@@ -29,5 +29,5 @@ def information():
     lim = rate_limit(headers,org)
     spinner.info(f"Rate limit is {lim} per minute.")
     spinner.start()
-    spinner.info(f"yamit should take {int(count/((speed/100)*int(lim)))} minutes to complete under your current settings.")
+    spinner.info(f"yamit should take {int(count/((speed/100)*int(lim)))} minutes to import {count} users under your current settings.")
 
