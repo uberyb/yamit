@@ -1,7 +1,7 @@
 import trio
 import httpx
 import csv
-from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers, workFactor
+from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers, workFactor, saltOrder
 import json
 from time import time
 from retry import retry
@@ -125,7 +125,7 @@ def build_credentials(row):
                     "password" : {
                         "hash" : {
                             "algorithm" : pw_mode,
-                            "saltOrder" : config['PASSWORD_SETTINGS']['SALT_ORDER'],
+                            "saltOrder" : saltOrder,
                             "salt" : row[password_options.index('salt')],
                             "value" : row[pw_ind]
                         }

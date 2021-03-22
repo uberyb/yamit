@@ -108,8 +108,10 @@ After the import you will receive a `log.csv` in the yamit directory which will 
 
 ## Issues
 
-Please post issues as you find them. I am usually pretty active and quick with fixes. So far, the tool has not been tested with SHA or MD5, only BCRYPT.
+Please post issues as you find them. I am usually pretty active and quick with fixes. So far, the tool has not been tested with SHA-512 or MD5, only BCRYPT and SHA-256.
 * There are issues with long-running imports in WSL2. Avoid using WSL2 with yamit.
 
+## Screenshots
 
+![](./images/runningimport.PNG)
 
