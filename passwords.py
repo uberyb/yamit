@@ -56,8 +56,8 @@ async def reset_user_password(args):
                 if speed != 100:
                     limit = int(r.headers['x-rate-limit-limit'])
                     remaining = int(r.headers['x-rate-limit-remaining'])
-                    if remaining <= (limit * speed/100):
-                        await trio.sleep(int(r.headers['x-rate-limit-reset']))
+                    if (remaining <= (limit+N - (limit * speed/100))) and (int(r.headers['x-rate-limit-reset']) - int(time())) > 0:
+                        await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
 
 
 async def main():
