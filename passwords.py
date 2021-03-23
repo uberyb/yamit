@@ -43,7 +43,7 @@ async def reset_user_password(args):
                 rel = f"/api/v1/users/{user}/lifecycle/reset_password?sendEmail=true"
                 r = await client.post(org+rel, headers=headers, data=json.dumps({}))
 
-                if r.status_code == 429:
+                while r.status_code == 429:
                         if reset_time_in_seconds != 0:
                             await trio.sleep(reset_time_in_seconds)
                             r = await client.post(org+rel, headers=headers, data = json.dumps({}))
@@ -52,12 +52,12 @@ async def reset_user_password(args):
                             await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
                             r = await client.post(org+rel, headers=headers, data = json.dumps({}))
 
-                elif r.status_code == 200:
-                    if speed != 100:
-                        limit = int(r.headers['x-rate-limit-limit'])
-                        remaining = int(r.headers['x-rate-limit-remaining'])
-                        if remaining <= (limit * speed/100):
-                            await trio.sleep(int(r.headers['x-rate-limit-reset']))
+
+                if speed != 100:
+                    limit = int(r.headers['x-rate-limit-limit'])
+                    remaining = int(r.headers['x-rate-limit-remaining'])
+                    if remaining <= (limit * speed/100):
+                        await trio.sleep(int(r.headers['x-rate-limit-reset']))
 
 
 async def main():
