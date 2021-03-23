@@ -155,6 +155,18 @@ def build_profile(row):
     else: return {**profile, **g}
 
 def check_atr():
+    global group_id
+    if group_id == "":
+        confspinner.info("No group id specified. Creating yamit group...")
+        data = {"profile": {"name":"yamit Imported Users", "description":"Group to place yamit imported users into if GROUP_ID was left blank."}}
+        r = httpx.post(org+'/api/v1/groups', headers = headers, data = json.dumps(data))
+        try:
+            group_id = r.json()['id']
+            confspinner.succeed(f"Group created with id {group_id}")
+            confspinner.start()
+        except Exception as e:
+            confspinner.info(f"Exception {e}")
+
     with httpx.Client() as client:
         r = client.get(org+'/api/v1/meta/schemas/user/default', headers=headers)
         if r.status_code == 200:
