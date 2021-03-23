@@ -41,7 +41,7 @@ else:
     if group_id == "":
         confspinner.info("No group id specified. Creating yamit group...")
         data = {"profile": {"name":"yamit Imported Users", "description":"Group to place yamit imported users into if GROUP_ID was left blank."}}
-        r = httpx.post(url+'/api/v1/groups', headers = headers, data = json.dumps(data))
+        r = httpx.post(org+'/api/v1/groups', headers = headers, data = json.dumps(data))
         try:
             group_id = r.json()['id']
             confspinner.succeed(f"Group created with id {group_id}")
