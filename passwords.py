@@ -33,6 +33,7 @@ async def get_users_in_group(send_group_users):
             
 
 async def reset_user_password(args):
+    global spinner, total_reset
     users = args[0]
     async with users:
         async for user in users:
