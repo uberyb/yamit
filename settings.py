@@ -1,7 +1,7 @@
 import configparser
 
 from halo import Halo
-
+import httpx, json
 
 confspinner = Halo(text=f'Starting yamit.', spinner='dots')
 confspinner.start()
@@ -37,5 +37,13 @@ else:
     headers = {'Accept': 'application/json', 'Content-Type':'application/json', 'Authorization': f'SSWS {api_key}'}
     workFactor = config['PASSWORD_SETTINGS']['WORK_FACTOR']
     saltOrder = config['PASSWORD_SETTINGS']['SALT_ORDER']
+
+    if group_id == "":
+        data = {"profile": {"name":"yamit Imported Users", "description":"Group to place yamit imported users into if GROUP_ID was left blank."}}
+        r = httpx.post(url+'/api/v1/groups', headers = headers, data = json.dumps(data))
+        try:
+            group_id = r.json()['id']
+        except Exception as e:
+            confspinner.info(f"Exception {e}")
 
 confspinner.succeed("Config loaded.")
