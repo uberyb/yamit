@@ -2,10 +2,13 @@ from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode
 import httpx
 import trio
 import json
+from halo import Halo
+from time import time
 
 
-
-
+spinner = Halo(text=f'Resetting passwords', spinner='dots')
+total_reset = 0
+start_time = int(time())
 
 async def get_users_in_group(send_group_users):
     async with send_group_users:
@@ -33,7 +36,8 @@ async def reset_user_password(args):
     users = args[0]
     async with users:
         async for user in users:
-            print(f"Working on {user}")
+            total_reset += 1
+            spinner.text = f"User id {user} \t Total {total_reset} \t runtime {int((time() - start_time)/60)} minutes"
             async with httpx.AsyncClient(timeout=120) as client:
                 rel = f"/api/v1/users/{user}/lifecycle/reset_password?sendEmail=true"
                 r = await client.post(org+rel, headers=headers, data=json.dumps({}))
@@ -63,4 +67,7 @@ async def main():
             nursery.start_soon(reset_user_password, [recv_channel.clone()])
 
 def reset_passwords():
+    spinner.info(f"Resetting passwords in group {group_id}")
+    spinner.start()
     trio.run(main)
+    spinner.succeed(f"Passwords reset \t group id {group_id} \t total {total_reset} \t runtime {int((time() - start_time)/60)} minutes")
