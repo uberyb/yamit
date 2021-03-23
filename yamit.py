@@ -1,10 +1,11 @@
 import argparse
-from settings import *
+
 from import_users import import_users
 from delete_users import delete_users
 from passwords import reset_passwords 
 from information import information
 
+from settings import *
 
 
 
@@ -20,10 +21,9 @@ if __name__ == '__main__':
 
     if args.information:
         information()
-
-    if args.delete_users:
+    if args.delete_users:    
         delete_users()
-    if args.no_import and not args.delete_users and not args.information:
+    if args.no_import and not args.delete_users and not args.information and not reset_passwords:
         import_users()
     if args.reset_passwords:
         reset_passwords()
