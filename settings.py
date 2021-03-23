@@ -21,6 +21,10 @@ if len(config.sections()) == 0:
     quit()
 else:
     org = config['APP_SETTINGS']['ORG']
+    if not org.startswith('https://'):
+        org = "https://" + org
+    if org[-1] == "/":
+        org = org[:len(org)-1]
     N = int(config['APP_SETTINGS']['MAX_CONCURRENT_SESSIONS'])
     api_key = config['APP_SETTINGS']['API_TOKEN']
     csv_file = config['APP_SETTINGS']['CSV_FILE']

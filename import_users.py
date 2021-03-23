@@ -65,9 +65,9 @@ async def worker(args):
                     limit = int(r.headers['x-rate-limit-limit'])
                     remaining = int(r.headers['x-rate-limit-remaining'])
                     if (remaining <= (limit+N - (limit * speed/100))) and (int(r.headers['x-rate-limit-reset']) - int(time())) > 0:
-                        spinner.info(f"Waiting for {int(r.headers['x-rate-limit-reset']) - int(time())} seconds to avoid being rate limited.")
+                        # spinner.info(f"Waiting for {int(r.headers['x-rate-limit-reset']) - int(time())} seconds to avoid being rate limited.")
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
-                        spinner.start()
+                        # spinner.start()
                     
                     
                 if r.status_code != 200 and r.status_code != 429:
