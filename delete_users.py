@@ -56,9 +56,9 @@ async def deactivate_worker(args):
 
                     r = await client.delete(org + f'/api/v1/users/{user}', headers=headers)
                     while r.status_code == 429:
-                        spinner.info(f"Sleeping for {int(r.headers['x-rate-limit-reset']) - int(time())+5} seconds...")
+                        # spinner.info(f"Sleeping for {int(r.headers['x-rate-limit-reset']) - int(time())+5} seconds...")
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time())+5)
-                        spinner.start()
+                        # spinner.start()
                         r = await client.delete(org + f'/api/v1/users/{user}', headers=headers)
                     deleted_num+=1
                     if deleted_num % notify == 0:
