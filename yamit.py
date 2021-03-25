@@ -23,7 +23,7 @@ if __name__ == '__main__':
         information()
     if args.delete_users:    
         delete_users()
-    if args.no_import and not args.delete_users and not args.information and not reset_passwords:
+    if args.no_import and not args.delete_users and not args.information and not args.reset_passwords:
         import_users()
     if args.reset_passwords:
         reset_passwords()
