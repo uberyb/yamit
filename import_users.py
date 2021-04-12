@@ -5,8 +5,8 @@ from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode
 import json
 from time import time
 from retry import retry
-
 from halo import Halo
+
 
 start_time = time()
 
@@ -16,7 +16,6 @@ password_options =  list()
 num_users = 0
 
 spinner = Halo(text=f'Importing...', spinner='dots')
-
 
 async def csv_emitter(send_channel):
     global spinner
@@ -29,7 +28,7 @@ async def csv_emitter(send_channel):
                 await send_channel.send(row)
 
 
-@retry(tries=3,delay=2)
+# @retry(tries=3,delay=2)
 async def worker(args):
     global num_users, spinner
     rel = args[0]
@@ -58,7 +57,8 @@ async def worker(args):
                 if num_users % notify == 0:
                     # print("notify")
                     # print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']} \t status {r.status_code}")
-                    spinner.text = f"Last imported {row[attributes.index('login')]} \t total {num_users} \t runtime {int(int(time() - start_time)/60)} minutes \t status {r.status_code}"
+                    spinner.text = f"Last imported {row[attributes.index('login')]}     total {num_users}     runtime {int(int(time() - start_time)/60)} minutes      status {r.status_code}"
+                    # spinner.text = "test"
                 
 
                 if speed != 100:
