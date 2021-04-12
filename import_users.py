@@ -38,12 +38,11 @@ async def worker(args):
         async for row in rows:
             user_profile_complete = build_profile(row)
             async with httpx.AsyncClient(timeout=120) as client:
-                # try:
                 r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
                 while r.status_code == 429:
                     if reset_time_in_seconds != 0:
                         await trio.sleep(reset_time_in_seconds)
-                        # r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+
 
                     else:
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
@@ -53,21 +52,20 @@ async def worker(args):
 
     
                 num_users += 1
-                # print(f"Rem: {r.headers['x-rate-limit-remaining']} \t No: {num_users}")
+
                 if num_users % notify == 0:
-                    # print("notify")
-                    # print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']} \t status {r.status_code}")
+
                     spinner.text = f"Last imported {row[attributes.index('login')]}     total {num_users}     runtime {int(int(time() - start_time)/60)} minutes      status {r.status_code}"
-                    # spinner.text = "test"
+
                 
 
                 if speed != 100:
                     limit = int(r.headers['x-rate-limit-limit'])
                     remaining = int(r.headers['x-rate-limit-remaining'])
                     if (remaining <= (limit+N - (limit * speed/100))) and (int(r.headers['x-rate-limit-reset']) - int(time())) > 0:
-                        # spinner.info(f"Waiting for {int(r.headers['x-rate-limit-reset']) - int(time())} seconds to avoid being rate limited.")
+
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
-                        # spinner.start()
+
                     
                     
                 if r.status_code != 200 and r.status_code != 429:
@@ -75,14 +73,7 @@ async def worker(args):
                         w = csv.writer(logger)
                         w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
                         logger.close()
-                # except:
-                #     with open('log.csv', 'a',newline='') as logger:
-                #             w = csv.writer(logger)
-                #             w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
-                #             logger.close()
-            # await client.aclose()
 
-    # print("Closing worker.")
     
 
 
