@@ -101,8 +101,6 @@ In the case of hashed passwords, you may also need to include a salt, in that ca
 "login","email","lastName","firstName","password","salt"
 ```
 
-Then of course, each row will be each attribute value. Strings should be placed in double quotes "".
-
 ## Post-import
 
 After the import you will receive a `log.csv` in the yamit directory which will inform you of runtime and any encountered errors. Just verify this against the numbers you see imported. If you need to undo everything, you can always run `python yamit.py -d`. 
