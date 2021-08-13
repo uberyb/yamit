@@ -27,7 +27,6 @@ ACTIVATE = true
 
 [PASSWORD_SETTINGS]
 PASSWORD_TYPE = PLAIN
-SALT =
 SALT_ORDER =
 WORK_FACTOR = 
 
@@ -100,8 +99,6 @@ In the case of hashed passwords, you may also need to include a salt, in that ca
 ```
 "login","email","lastName","firstName","password","salt"
 ```
-
-Then of course, each row will be each attribute value. Strings should be placed in double quotes "".
 
 ## Post-import
 
