@@ -24,8 +24,10 @@ if __name__ == '__main__':
     if args.gen_config:
         from generate_config import generate_config
         generate_config()
-        
-    from settings import *
+    try:
+        from settings import *
+    except ImportError:
+        print("Having trouble importing your settings. This is usually caused by a recent config file generation. In most cases, this can be resolved by running yamit normally.")
     if args.information:
         from information import information
         information()

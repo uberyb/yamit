@@ -63,5 +63,5 @@ def generate_config():
                 f.write(f"WORK_FACTOR = {work_factor}\n")
 
             f.write("\n[ADVANCED]\nRESET_TIME_IN_SECONDS = 0")
-            print("\033[1mGenerated config file.\e[0m")
+            print("\033[1mGenerated config file.")
             f.close()
