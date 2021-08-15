@@ -1,6 +1,5 @@
 import argparse
-
-
+import sys
 
  
 
@@ -28,6 +27,7 @@ if __name__ == '__main__':
         from settings import *
     except ImportError:
         print("Having trouble importing your settings. This is usually caused by a recent config file generation. In most cases, this can be resolved by running yamit normally.")
+        sys.exit(1)
     if args.information:
         from information import information
         information()
