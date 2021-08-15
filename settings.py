@@ -2,6 +2,7 @@ import configparser
 
 from halo import Halo
 import httpx, json
+from generate_config import generate_config
 
 confspinner = Halo(text=f'Starting yamit.', spinner='dots')
 confspinner.start()
@@ -17,8 +18,8 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 if len(config.sections()) == 0:
-    print("Config file not found. Please make sure there is a config.ini file in the same directory as app.py.")
-    quit()
+    confspinner.stop()
+    generate_config()
 else:
     org = config['APP_SETTINGS']['ORG']
     if not org.startswith('https://'):

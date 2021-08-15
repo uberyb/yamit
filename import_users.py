@@ -4,7 +4,7 @@ import csv
 from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers, workFactor, saltOrder
 import json
 from time import time
-from retry import retry
+import sys
 
 from halo import Halo
 
@@ -29,7 +29,6 @@ async def csv_emitter(send_channel):
                 await send_channel.send(row)
 
 
-@retry(tries=3,delay=2)
 async def worker(args):
     global num_users, spinner
     rel = args[0]
@@ -38,14 +37,20 @@ async def worker(args):
     async with rows:
         async for row in rows:
             user_profile_complete = build_profile(row)
-            async with httpx.AsyncClient(timeout=120) as client:
-                # try:
-                r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+            async with httpx.AsyncClient(timeout=120, transport=httpx.AsyncHTTPTransport(retries=5)) as client:
+                try:
+                    r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                except httpx.ConnectError as exc:
+                    spinner.info(f"yamit encountered a name resolution error and is logging your progress. Process failed on {row[attributes.index('login')]}")
+                    with open('log.csv', 'a',newline='') as logger:
+                        w = csv.writer(logger)
+                        w.writerow(['Failure', row[attributes.index('login')], "Connect error, unable to resolve name.", exc.request.url])
+                        logger.close()
+                    sys.exit(1)
+
                 while r.status_code == 429:
                     if reset_time_in_seconds != 0:
                         await trio.sleep(reset_time_in_seconds)
-                        # r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-
                     else:
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
 
@@ -54,10 +59,7 @@ async def worker(args):
 
     
                 num_users += 1
-                # print(f"Rem: {r.headers['x-rate-limit-remaining']} \t No: {num_users}")
                 if num_users % notify == 0:
-                    # print("notify")
-                    # print(f"Last imported {row[attributes.index('login')]} \t total {num_users} \t remaining-api-calls {r.headers['x-rate-limit-remaining']} \t status {r.status_code}")
                     spinner.text = f"Last imported {row[attributes.index('login')]} \t total {num_users} \t runtime {int(int(time() - start_time)/60)} minutes \t status {r.status_code}"
                 
 
@@ -65,9 +67,7 @@ async def worker(args):
                     limit = int(r.headers['x-rate-limit-limit'])
                     remaining = int(r.headers['x-rate-limit-remaining'])
                     if (remaining <= (limit+N - (limit * speed/100))) and (int(r.headers['x-rate-limit-reset']) - int(time())) > 0:
-                        # spinner.info(f"Waiting for {int(r.headers['x-rate-limit-reset']) - int(time())} seconds to avoid being rate limited.")
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
-                        # spinner.start()
                     
                     
                 if r.status_code != 200 and r.status_code != 429:
@@ -75,15 +75,6 @@ async def worker(args):
                         w = csv.writer(logger)
                         w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
                         logger.close()
-                # except:
-                #     with open('log.csv', 'a',newline='') as logger:
-                #             w = csv.writer(logger)
-                #             w.writerow(['Failure', row[attributes.index('login')], 'TIMEOUT'])
-                #             logger.close()
-            # await client.aclose()
-
-    # print("Closing worker.")
-    
 
 
 def build_credentials(row):
@@ -166,6 +157,7 @@ def check_atr():
             spinner.start()
         except Exception as e:
             spinner.info(f"Exception {e}")
+            sys.exit(1)
 
     with httpx.Client() as client:
         r = client.get(org+'/api/v1/meta/schemas/user/default', headers=headers)
@@ -210,7 +202,6 @@ async def main():
     mainspinner.succeed("Compared attributes to Okta user schema...")
     async with trio.open_nursery() as nursery:
         send_channel, receive_channel = trio.open_memory_channel(0)
-        # recv_chan = await csv_emitter('users.csv')
         nursery.start_soon(csv_emitter,send_channel)
         
         spinner.start()
