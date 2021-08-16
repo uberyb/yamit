@@ -2,7 +2,7 @@ import configparser
 import trio
 import httpx
 from time import time
-from retry import retry
+# from retry import retry
 from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers
 import math
 

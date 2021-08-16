@@ -2,6 +2,7 @@ from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode
 import httpx
 from halo import Halo
 import csv
+import sys
 
 spinner = Halo(text=f'Loading users CSV...', spinner='dots')
 
@@ -38,4 +39,5 @@ def information():
         spinner.info(f"yamit should take {int(count/((speed/100)*int(lim)))} minutes to import {count} users under your current settings.")
     except Exception as e:
         spinner.info(f"Exception {e}. Check the yamit configuration.")
+        sys.exit(1)
 

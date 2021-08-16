@@ -1,6 +1,5 @@
 # yamit
 
-[TOC]
 
 This repository serves as a mass import tool for Okta. Currently out of the box import tools are limited. CSV imports are limited to 10k rows and do not support more advanced features like importing hashed passwords and importing with password inline hooks. This tool has the following capabilities:
 
@@ -38,7 +37,7 @@ RESET_TIME_IN_SECONDS = 0
 * Org - simply your full url of your Okta tenant
 * Api token - this needs to be an API token created by a super administrator for the org specified in the Org setting
 * Csv file - the name/[ath] of the csv file we will be importing your users from
-* Group id - the unique id for the group we will be adding users to. If none is specified the tool will automatically created a group named "Import Group" for you. If there is a conflict with the name the tool will error out. Please specify a group to place these users in so you can revert any changes easily if you need to.
+* Group id - the unique id for the group we will be adding users to. If none is specified the tool will automatically created a group named "Import Group" for you. If there is a conflict with the name the tool will error out. Please specify a group to place these users in so you can revert any changes easily if you need to. -->
 * Notify - tells you how often the tool will print to console. A value of 100 means it will print every for every 100th user.
 * Speed - this is a percentage between 0 and 100 to specify how much of your api rate limit you want to use. Set it to 100 to go as fast as possible
 * Activate - takes values true or false, this determines if the user will be created in an active state or not.
