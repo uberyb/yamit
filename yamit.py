@@ -1,13 +1,6 @@
 import argparse
 import sys
 
- 
-
-
-
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -40,5 +33,3 @@ if __name__ == '__main__':
     if args.reset_passwords:
         from passwords import reset_passwords
         reset_passwords()
-    
-        
