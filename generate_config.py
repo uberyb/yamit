@@ -14,7 +14,7 @@ def generate_config():
         except ValueError:
             print("\033[91mOnly integers are allowed, sorry.")
             sys.exit(1)
-        if int(max_concurrent_sessions) > 20 or int(max_concurrent_sessions) < 1:
+        if int(max_concurrent_sessions) < 1:
             print("\033[91mBad value.")
             sys.exit(1)
         
@@ -38,6 +38,8 @@ def generate_config():
             f.write(f"CSV_FILE = {csv_file}\n")
             if group_id == "":
                 f.write(f"GROUP_ID = \n")
+            else: 
+                f.write(f"GROUP_ID = {group_id}\n")
             f.write("NOTIFY = 1\n")
             if speed == "":
                 speed = "95"

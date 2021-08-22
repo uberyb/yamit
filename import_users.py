@@ -105,7 +105,11 @@ async def worker(args):
                 if r.status_code != 200 and r.status_code != 429:
                     with open('log.csv', 'a',newline='') as logger:
                         w = csv.writer(logger)
-                        w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
+                        try:
+                            w.writerow(['Failure', row[attributes.index('login')], r.json()['errorSummary'], r.status_code])
+                        except json.decoder.JSONDecodeError:
+                            w.writerow(['Failure',"" , "Error decoding JSON. More information on next line.", r.status_code])
+                            w.writerow(['Failure', row[attributes.index('login')], r.text, r.status_code])
                         logger.close()
 <<<<<<< HEAD
 
