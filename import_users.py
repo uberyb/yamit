@@ -54,7 +54,15 @@ async def worker(args):
                     else:
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
 
-                    r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                    try:
+                        r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                    except httpx.ConnectError:
+                        with open('log.csv', 'a',newline='') as logger:
+                            w = csv.writer(logger)
+                            w.writerow(['Failure', row[attributes.index('login')], "Connect error, unable to resolve name.", exc.request.url])
+                            logger.close()
+                        sys.exit(1)
+
 
 
     
