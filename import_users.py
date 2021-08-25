@@ -56,7 +56,7 @@ async def worker(args):
 
                     try:
                         r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-                    except httpx.ConnectError:
+                    except httpx.ConnectError as exc:
                         with open('log.csv', 'a',newline='') as logger:
                             w = csv.writer(logger)
                             w.writerow(['Failure', row[attributes.index('login')], "Connect error, unable to resolve name.", exc.request.url])
