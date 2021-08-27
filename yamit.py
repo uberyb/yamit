@@ -1,5 +1,6 @@
 import argparse
 import sys
+from validator import validate_users
 
 
 if __name__ == '__main__':
@@ -9,6 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--reset-passwords', action='store_true')
     parser.add_argument('-i', '--information', action='store_true')
     parser.add_argument('-c', '--gen-config', action='store_true')
+    parser.add_argument('-v', '--validate', action='store_true')
     args = parser.parse_args()
     
 
@@ -27,13 +29,12 @@ if __name__ == '__main__':
     if args.delete_users:   
         from delete_users import delete_users 
         delete_users()
-    if args.no_import and not args.delete_users and not args.information and not args.reset_passwords and not args.gen_config:
+    if args.no_import and not args.delete_users and not args.information and not args.reset_passwords and not args.gen_config and not args.validate:
         from import_users import import_users
         import_users()
     if args.reset_passwords:
         from passwords import reset_passwords
         reset_passwords()
-<<<<<<< HEAD
-        
-=======
->>>>>>> origin/develop
+
+    if args.validate:
+        validate_users()

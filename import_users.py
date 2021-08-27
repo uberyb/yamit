@@ -4,12 +4,8 @@ import csv
 from settings import org, api_key, N, csv_file, group_id, notify, speed, pw_mode, activate, reset_time_in_seconds, headers, workFactor, saltOrder
 import json
 from time import time
-<<<<<<< HEAD
-from retry import retry
-=======
 import sys
 
->>>>>>> origin/develop
 from halo import Halo
 
 
@@ -33,10 +29,6 @@ async def csv_emitter(send_channel):
                 await send_channel.send(row)
 
 
-<<<<<<< HEAD
-# @retry(tries=3,delay=2)
-=======
->>>>>>> origin/develop
 async def worker(args):
     global num_users, spinner
     rel = args[0]
@@ -45,15 +37,6 @@ async def worker(args):
     async with rows:
         async for row in rows:
             user_profile_complete = build_profile(row)
-<<<<<<< HEAD
-            async with httpx.AsyncClient(timeout=120) as client:
-                r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
-                while r.status_code == 429:
-                    if reset_time_in_seconds != 0:
-                        await trio.sleep(reset_time_in_seconds)
-
-
-=======
             async with httpx.AsyncClient(timeout=120, transport=httpx.AsyncHTTPTransport(retries=5)) as client:
                 try:
                     r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
@@ -68,38 +51,31 @@ async def worker(args):
                 while r.status_code == 429:
                     if reset_time_in_seconds != 0:
                         await trio.sleep(reset_time_in_seconds)
->>>>>>> origin/develop
                     else:
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()) + 10)
 
-                    r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                    try:
+                        r = await client.post(org+rel, headers=headers, data = json.dumps(user_profile_complete))
+                    except httpx.ConnectError as exc:
+                        with open('log.csv', 'a',newline='') as logger:
+                            w = csv.writer(logger)
+                            w.writerow(['Failure', row[attributes.index('login')], "Connect error, unable to resolve name.", exc.request.url])
+                            logger.close()
+                        sys.exit(1)
+
 
 
     
                 num_users += 1
-<<<<<<< HEAD
-
-                if num_users % notify == 0:
-
-                    spinner.text = f"Last imported {row[attributes.index('login')]}     total {num_users}     runtime {int(int(time() - start_time)/60)} minutes      status {r.status_code}"
-
-=======
                 if num_users % notify == 0:
                     spinner.text = f"Last imported {row[attributes.index('login')]} \t total {num_users} \t runtime {int(int(time() - start_time)/60)} minutes \t status {r.status_code}"
->>>>>>> origin/develop
                 
 
                 if speed != 100:
                     limit = int(r.headers['x-rate-limit-limit'])
                     remaining = int(r.headers['x-rate-limit-remaining'])
                     if (remaining <= (limit+N - (limit * speed/100))) and (int(r.headers['x-rate-limit-reset']) - int(time())) > 0:
-<<<<<<< HEAD
-
                         await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
-
-=======
-                        await trio.sleep(int(r.headers['x-rate-limit-reset']) - int(time()))
->>>>>>> origin/develop
                     
                     
                 if r.status_code != 200 and r.status_code != 429:
@@ -111,11 +87,6 @@ async def worker(args):
                             w.writerow(['Failure',"" , "Error decoding JSON. More information on next line.", r.status_code])
                             w.writerow(['Failure', row[attributes.index('login')], r.text, r.status_code])
                         logger.close()
-<<<<<<< HEAD
-
-    
-=======
->>>>>>> origin/develop
 
 
 def build_credentials(row):
