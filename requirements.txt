@@ -17,3 +17,4 @@ sortedcontainers==2.4.0
 spinners==0.0.24
 termcolor==1.1.0
 trio==0.19.0
+pandas
