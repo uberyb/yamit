@@ -47,6 +47,17 @@ RESET_TIME_IN_SECONDS = 0
 * Work factor - needs to be specified for Bcrypt
 * Reset time in seconds - used if you want to override information about your rate limit. You can specify manually how long you want to wait after receiving a 429 from Okta
 
+## Docker
+This repository supplies a `docker-compose.yml` for your use. This is the recommended approach as opposed to running the python script natively. To use this, make sure you have [docker-compose](https://docs.docker.com/compose/) installed. From there, clone the directory and `cd` into it. Next run
+
+```console
+docker-compose build
+docker-compose run yamit        # this command will begin the import
+docker-compose run yamit -d     # this command will run a deletion process
+```
+
+The rest of the README applies, however you can skip the next session since docker-compose will handle everything for you.
+
 ## Running
 
 After installing dependencies through 
