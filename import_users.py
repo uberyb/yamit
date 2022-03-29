@@ -123,18 +123,31 @@ def build_credentials(row):
             }
             return c
         elif pw_mode == 'SHA-512' or pw_mode == 'SHA-256' or pw_mode == 'SHA-1' or pw_mode == 'MD5':
-            c = {
-                "credentials" : {
-                    "password" : {
-                        "hash" : {
-                            "algorithm" : pw_mode,
-                            "saltOrder" : saltOrder,
-                            "salt" : row[password_options.index('salt')],
-                            "value" : row[pw_ind]
+            if saltOrder:
+                c = {
+                    "credentials" : {
+                        "password" : {
+                            "hash" : {
+                                "algorithm" : pw_mode,
+                                "saltOrder" : saltOrder,
+                                "salt" : row[password_options.index('salt')],
+                                "value" : row[pw_ind]
+                            }
                         }
                     }
                 }
-            }
+            else:
+                c = {
+                    "credentials" : {
+                        "password" : {
+                            "hash" : {
+                                "algorithm" : pw_mode,
+                                "value" : row[pw_ind]
+                            }
+                        }
+                    }
+                }
+
             return c
         else:
             print("Problems with password import. Please check config and csv file and try again.")
